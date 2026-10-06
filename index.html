@@ -1,0 +1,139 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Countdown GTA VI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&family=Jost:wght@300;400;500&display=swap">
+<style>
+/* Layout: canvas sunset con palme a tutta pagina, contenuto centrato sopra; tema unico notturno di Miami */
+:root{
+  --night:#12062a; --dusk:#3b0f4f; --pink:#ff3d9a; --peach:#ffb26b; --cyan:#29e3ff; --ink:#fff3fb;
+  --glass:rgba(18,6,42,.55);
+  --f-display:"Anton","Impact","Arial Narrow",sans-serif;
+  --f-digits:"Orbitron","Courier New",monospace;
+  --f-body:"Jost","Helvetica Neue",system-ui,sans-serif;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--f-body);overflow-x:hidden}
+#sky{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block}
+.wrap{position:relative;z-index:1;min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(18px,3vh,32px);padding-inline:16px;padding-block:40px;text-align:center}
+.eyebrow{font:400 clamp(13px,1.8vw,15px)/1 var(--f-body);letter-spacing:.4em;text-transform:uppercase;color:rgba(255,243,251,.75)}
+h1{margin:0;font-family:var(--f-body);font-weight:500;text-transform:uppercase;font-size:clamp(56px,13vw,140px);line-height:1;letter-spacing:.03em;
+  background:linear-gradient(180deg,var(--peach),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.date{font:400 clamp(15px,2.2vw,19px)/1.2 var(--f-body);letter-spacing:.2em;text-transform:uppercase;color:rgba(255,243,251,.85)}
+.timer{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:min(720px,100%);
+  background:rgba(18,6,42,.4);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-radius:4px;padding-block:clamp(14px,2.5vw,24px)}
+.unit{min-width:0}
+.unit+.unit{border-left:1px solid rgba(255,243,251,.15)}
+.num{font:500 clamp(26px,7vw,64px)/1 var(--f-digits);font-variant-numeric:tabular-nums;color:var(--ink)}
+.lbl{margin-top:8px;font:400 clamp(11px,1.6vw,13px)/1 var(--f-body);letter-spacing:.3em;text-transform:uppercase;color:var(--peach)}
+.done{display:none;font-family:var(--f-display);font-size:clamp(26px,5vw,48px);color:var(--peach)}
+.is-out .timer{display:none}.is-out .done{display:block}
+.fine{font-size:13px;letter-spacing:.08em;color:rgba(255,243,251,.6);max-width:60ch}
+@media (max-width:440px){.lbl{letter-spacing:.12em}}
+</style>
+
+<canvas id="sky" aria-hidden="true"></canvas>
+<main class="wrap" id="app">
+  <div class="eyebrow">Benvenuti a Vice City</div>
+  <h1>GTA VI</h1>
+  <div class="timer" role="timer" aria-live="off">
+    <div class="unit"><div class="num" id="d">--</div><div class="lbl">Giorni</div></div>
+    <div class="unit"><div class="num" id="h">--</div><div class="lbl">Ore</div></div>
+    <div class="unit"><div class="num" id="m">--</div><div class="lbl">Minuti</div></div>
+    <div class="unit"><div class="num" id="s">--</div><div class="lbl">Secondi</div></div>
+  </div>
+  <div class="done">È uscito. Si gioca!</div>
+</main>
+
+<script>
+(function(){
+  const target = new Date(2026,10,19,0,0,0); // 19 nov 2026, mezzanotte locale
+  const $=id=>document.getElementById(id), pad=n=>String(n).padStart(2,"0");
+  function tick(){
+    const now=new Date(); let diff=target-now;
+    if(diff<=0){document.getElementById("app").classList.add("is-out");return;}
+    const s=Math.floor(diff/1000);
+    $("d").textContent=Math.floor(s/86400);
+    $("h").textContent=pad(Math.floor(s%86400/3600));
+    $("m").textContent=pad(Math.floor(s%3600/60));
+    $("s").textContent=pad(s%60);
+  }
+  tick(); setInterval(tick,250);
+
+  // Sfondo: tramonto, sole a strisce, mare e palme che ondeggiano
+  const cv=$("sky"), ctx=cv.getContext("2d");
+  const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let W,H,dpr;
+  function size(){dpr=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;cv.width=W*dpr;cv.height=H*dpr;ctx.setTransform(dpr,0,0,dpr,0,0);}
+  addEventListener("resize",size); size();
+  const stars=Array.from({length:40},()=>({x:Math.random(),y:Math.random()*.45,r:Math.random()*1.3+.3,p:Math.random()*6}));
+  const palms=[
+    {x:.06,h:.62,lean:.10,ph:0},{x:.17,h:.46,lean:-.05,ph:1.7},
+    {x:.84,h:.58,lean:-.12,ph:.9},{x:.95,h:.42,lean:.06,ph:2.4},{x:.73,h:.34,lean:.08,ph:3.1}
+  ];
+  function drawPalm(p,t){
+    const baseX=p.x*W, baseY=H*.86, hgt=p.h*H, sway=Math.sin(t*.9+p.ph)*.035;
+    const topX=baseX+(p.lean+sway)*hgt, topY=baseY-hgt;
+    ctx.fillStyle=ctx.strokeStyle="#0b0318";
+    // tronco curvo, rastremato
+    ctx.beginPath();
+    const cx=baseX+(p.lean*.2)*hgt, cy=baseY-hgt*.5;
+    ctx.moveTo(baseX-hgt*.03,baseY);
+    ctx.quadraticCurveTo(cx-hgt*.02,cy,topX-hgt*.012,topY);
+    ctx.lineTo(topX+hgt*.012,topY);
+    ctx.quadraticCurveTo(cx+hgt*.02,cy,baseX+hgt*.03,baseY);
+    ctx.fill();
+    // fronde
+    const n=8, len=hgt*.42;
+    for(let i=0;i<n;i++){
+      const a=-Math.PI/2+(i/(n-1)-.5)*Math.PI*1.55+Math.sin(t*1.3+p.ph+i)*.07+sway*2;
+      const ex=topX+Math.cos(a)*len, ey=topY+Math.sin(a)*len*.55+len*.35*Math.abs(Math.cos(a));
+      const mx=topX+Math.cos(a)*len*.5, my=topY+Math.sin(a)*len*.45-len*.12;
+      // foglia come forma piena con nervatura
+      const nx=-Math.sin(a)*len*.07, ny=Math.cos(a)*len*.07;
+      ctx.beginPath();
+      ctx.moveTo(topX,topY);
+      ctx.quadraticCurveTo(mx+nx,my+ny,ex,ey);
+      ctx.quadraticCurveTo(mx-nx*.4,my-ny*.4,topX,topY);
+      ctx.fill();
+    }
+    // noci di cocco
+    ctx.beginPath();ctx.arc(topX-hgt*.012,topY+hgt*.02,hgt*.016,0,7);ctx.arc(topX+hgt*.016,topY+hgt*.024,hgt*.015,0,7);ctx.fill();
+  }
+  function frame(ms){
+    const t=reduce?0:ms/1000;
+    const horizon=H*.66;
+    let g=ctx.createLinearGradient(0,0,0,horizon);
+    g.addColorStop(0,"#12062a");g.addColorStop(.45,"#3b0f4f");g.addColorStop(.78,"#c2306f");g.addColorStop(1,"#ff9a5c");
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,horizon);
+    for(const s of stars){ctx.globalAlpha=.4+.6*Math.abs(Math.sin(t*.8+s.p));ctx.fillStyle="#fff";ctx.fillRect(s.x*W,s.y*H,s.r,s.r);}
+    ctx.globalAlpha=1;
+    // sole a strisce
+    const R=Math.min(W,H)*.22, sx=W/2, sy=horizon-R*.25;
+    ctx.save();ctx.beginPath();ctx.rect(0,0,W,horizon);ctx.clip();
+    g=ctx.createLinearGradient(0,sy-R,0,sy+R);g.addColorStop(0,"#ffe08a");g.addColorStop(.6,"#ff7a59");g.addColorStop(1,"#ff3d9a");
+    ctx.shadowColor="#ff6aa8";ctx.shadowBlur=60;ctx.fillStyle=g;ctx.beginPath();ctx.arc(sx,sy,R,0,7);ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle="#c2306f";
+    for(let i=0;i<7;i++){const yy=sy+R*(.05+i*.14)-((t*8)%(R*.14));const hh=2+i*1.6;ctx.fillRect(sx-R,yy,R*2,hh);}
+    ctx.restore();
+    // mare
+    g=ctx.createLinearGradient(0,horizon,0,H);g.addColorStop(0,"#5a1a6e");g.addColorStop(1,"#12062a");
+    ctx.fillStyle=g;ctx.fillRect(0,horizon,W,H-horizon);
+    // riflessi del sole
+    for(let i=0;i<14;i++){
+      const yy=horizon+6+i*i*1.6, w=R*(1.4-i*.07)*(.75+.25*Math.sin(t*2+i));
+      ctx.globalAlpha=.55-i*.035;ctx.fillStyle=i%2?"#ff9a5c":"#ff3d9a";ctx.fillRect(sx-w/2,yy,w,2);
+    }
+    ctx.globalAlpha=1;
+    // spiaggia
+    ctx.fillStyle="#0b0318";ctx.beginPath();ctx.moveTo(0,H*.86);
+    ctx.quadraticCurveTo(W*.5,H*.82,W,H*.86);ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.fill();
+    for(const p of palms) drawPalm(p,t);
+    if(!reduce) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+  if(reduce) addEventListener("resize",()=>requestAnimationFrame(frame));
+})();
+</script>
+
+</body></html>
